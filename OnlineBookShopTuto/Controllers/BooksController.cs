@@ -9,9 +9,11 @@ namespace OnlineBookShopTuto.Controllers
     public class BooksController : Controller
     {
         private readonly AppDbContext _context;
-        public BooksController(AppDbContext context)
+        private readonly IWebHostEnvironment _env;
+        public BooksController(AppDbContext context, IWebHostEnvironment env)
         {
             _context = context;
+            _env = env;
         }
         public async Task<IActionResult> Index()
         {
@@ -27,7 +29,7 @@ namespace OnlineBookShopTuto.Controllers
         [HttpPost]
         public async Task<IActionResult> Create(Book book)
         {
-            if(ModelState.IsValid)
+            if (ModelState.IsValid)
             {
                 _context.Books.Add(book);
                 await _context.SaveChangesAsync();
@@ -55,11 +57,11 @@ namespace OnlineBookShopTuto.Controllers
         [HttpPost]
         public async Task<IActionResult> Edit(int id, Book book)
         {
-            if(id != book.Id)
+            if (id != book.Id)
             {
                 return NotFound();
             }
-            if(ModelState.IsValid)
+            if (ModelState.IsValid)
             {
                 _context.Update(book);
                 await _context.SaveChangesAsync();
@@ -78,7 +80,7 @@ namespace OnlineBookShopTuto.Controllers
                 .Include(b => b.Category)
                 .FirstOrDefaultAsync(b => b.Id == id);
 
-            if(book == null)
+            if (book == null)
             {
                 return NotFound();
             }
@@ -91,13 +93,44 @@ namespace OnlineBookShopTuto.Controllers
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var book = await _context.Books.FindAsync(id);
-            if(book != null)
+            if (book != null)
             {
                 _context.Books.Remove(book);
                 await _context.SaveChangesAsync();
             }
 
             return RedirectToAction(nameof(Index));
+        }
+
+
+        private bool IsValidImage(IFormFile file)
+        {
+            var allowed = new[] { ".jpg", ".jpeg", ".png", ".webp" };
+            var ext = Path.GetExtension(file.FileName).ToLowerInvariant();
+            return allowed.Contains(ext) && file.Length <= 2 * 1024 * 1024; //Tối đa 2MB
+        }
+
+
+        private async Task<string> SaveImageAsync(IFormFile? file)
+        {
+            if (file == null || file.Length == 0)
+            {
+                return null;
+            }
+
+            var folder = Path.Combine(_env.WebRootPath, "images", "books");
+            Directory.CreateDirectory(folder);
+
+            var ext = Path.GetExtension(file.FileName).ToLowerInvariant();
+            var fileName= Guid.NewGuid().ToString() + ext;
+            var fullPath = Path.Combine(folder, fileName);
+
+            using (var stream = new FileStream(fullPath, FileMode.Create))
+            {
+                await file.CopyToAsync(stream);
+            }
+
+            return "/images/books" + fileName;
         }
     }
 }
