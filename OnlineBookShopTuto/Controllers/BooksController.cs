@@ -38,5 +38,66 @@ namespace OnlineBookShopTuto.Controllers
             return View(book);
         }
 
+        //GET: /Books/Edit/2 => hiện form có sẵn dữ liệu cũ
+        public async Task<IActionResult> Edit(int id)
+        {
+            var book = await _context.Books.FindAsync(id);
+            if (book == null)
+            {
+                return NotFound();
+            }
+
+            ViewBag.CategoryId = new SelectList(_context.Categories, "Id", "Name", book.CategoryId);
+            return View(book);
+        }
+
+        //POST: /Books/Edit/2 => nhận dữ liệu mới và cập nhật
+        [HttpPost]
+        public async Task<IActionResult> Edit(int id, Book book)
+        {
+            if(id != book.Id)
+            {
+                return NotFound();
+            }
+            if(ModelState.IsValid)
+            {
+                _context.Update(book);
+                await _context.SaveChangesAsync();
+                return RedirectToAction(nameof(Index));
+            }
+
+            ViewBag.CategoryId = new SelectList(_context.Categories, "Id", "Name", book.CategoryId);
+            return View(book);
+        }
+
+
+        //GET: /Books/Delete/2 => hiện trang xác nhận
+        public async Task<IActionResult> Delete(int id)
+        {
+            var book = await _context.Books
+                .Include(b => b.Category)
+                .FirstOrDefaultAsync(b => b.Id == id);
+
+            if(book == null)
+            {
+                return NotFound();
+            }
+
+            return View(book);
+        }
+
+        //POST: /Books/Delete/2 => Xoá thật
+        [HttpPost, ActionName("Delete")]
+        public async Task<IActionResult> DeleteConfirmed(int id)
+        {
+            var book = await _context.Books.FindAsync(id);
+            if(book != null)
+            {
+                _context.Books.Remove(book);
+                await _context.SaveChangesAsync();
+            }
+
+            return RedirectToAction(nameof(Index));
+        }
     }
 }
