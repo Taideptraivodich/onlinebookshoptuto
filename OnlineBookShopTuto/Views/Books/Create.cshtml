@@ -6,7 +6,7 @@
         <div class="container mt-4" style="max-width: 600px";>
             <h2>Thêm sách</h2>
 
-            <form asp-action="Create" method="post">
+            <form asp-action="Create" method="post" enctype="multipart/form-data">
                 <div class="mb-3">
                     <label asp-for="Title" class="form-label">Tên sách</label>
                     <input asp-for="Title" class="form-control" />
@@ -30,6 +30,13 @@
                 <label asp-for="Stock" class="form-label">Tồn kho</label>
                 <input asp-for="Stock" class="form-control" />
             </div>
+
+            <div class="mb-3">
+                <label class="form-label">Ảnh bìa</label>
+                <input type="file" name="imageFile" class="form-control" accept="image/*" />
+                <span asp-validation-for="ImageUrl" class="text-danger"></span>
+            </div>
+
             <div class="mb-3">
                 <label asp-for="Description" class="form-label">Mô tả</label>
                 <textarea asp-for="Description" class="form-control" rows="3"></textarea>

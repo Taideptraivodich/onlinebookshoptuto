@@ -6,7 +6,7 @@
 		<div class="container mt-4" style="max-width: 680px;">
 			<h2>Sửa sách</h2>
 
-			<form asp-action="Edit" asp-route-id="@Model.Id" method="post">
+			<form asp-action="Edit" asp-route-id="@Model.Id" method="post" enctype="multipart/form-data">
 				<input type="hidden" asp-for="Id" />
 				<input type="hidden" asp-for="ImageUrl" />
 
@@ -35,6 +35,18 @@
 					<label asp-for="Stock" class="form-label">Tồn kho</label>
 					<input asp-for="Stock" class="form-control" />
 				</div>
+
+				<div class="mb-3">
+					<label class="form-label">Ảnh bìa</label>
+					@if(!string.IsNullOrEmpty(Model.ImageUrl))
+					{
+						<img src="@Model.ImageUrl" alt="Ảnh bìa" style="height: 120px;" class="d-Block mb-2" />
+					}
+				</div>
+
+				<input type="file" name="imageFile" class="form-control" accept="image/*" />
+				<span asp-validation-for="ImageUrl" class="text-danger"></span>
+				<div class="form-text">Không chọn ảnh mới thì giữ ảnh cũ.</div>"
 
 				<div class="mb-3">
 					<label asp-for="Description" class="form-label">Mô tả</label>

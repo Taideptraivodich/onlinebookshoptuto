@@ -27,8 +27,13 @@ namespace OnlineBookShopTuto.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Create(Book book)
+        public async Task<IActionResult> Create(Book book, IFormFile imageFile)
         {
+            if(imageFile != null && IsValidImage(imageFile))
+            {
+                ModelState.AddModelError("ImageUrl", "Chỉ nhận ảnh .jpg .png .webp và tối đa 2MB");
+            }
+
             if (ModelState.IsValid)
             {
                 _context.Books.Add(book);
@@ -55,14 +60,27 @@ namespace OnlineBookShopTuto.Controllers
 
         //POST: /Books/Edit/2 => nhận dữ liệu mới và cập nhật
         [HttpPost]
-        public async Task<IActionResult> Edit(int id, Book book)
+        public async Task<IActionResult> Edit(int id, Book book, IFormFile? imageFile)
         {
             if (id != book.Id)
             {
                 return NotFound();
             }
+
+            if(imageFile != null && !IsValidImage(imageFile))
+            {
+                ModelState.AddModelError("ImageUrl", "Chỉ nhận ảnh .jpg .png .webp và tối đa 2MB");
+            }
+
             if (ModelState.IsValid)
             {
+                var newImage = await SaveImageAsync(imageFile);
+                if(newImage != null)
+                {
+                    book.ImageUrl = newImage;
+                }
+                //không chọn ảnh mới thì book.ImageUrl vẫn là ảnh cũ (từ ô ẩn trong form)
+
                 _context.Update(book);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
