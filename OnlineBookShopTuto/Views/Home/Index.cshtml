@@ -1,8 +1,69 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
+﻿@model IEnumerable<OnlineBookShopTuto.Models.Book>
+@{
+    ViewData["Title"] = "Trang chủ";
+    var categories = ViewBag.Categories as List<OnlineBookShopTuto.Models.Category> ?? new();
+    var currentCategoryId = ViewBag.CategoryId as int?;
+}
+<h2 class="mb-4">Cửa hàng sách</h2>
+
+<form method="get" asp-action="Index" class="row g-2 mb-4">
+    <div class="col md-6">
+        <input type="text" name="search" value="@ViewBag.Search" class="form-control" placeholder="Tìm theo tên sách hoặc tác giả ..." />
+    </div>
+    <div class="col-md-3">
+        <select name="categoryId" class="form-select">
+            <option value="">Tất cả danh mục</option>
+            @foreach(var c in categories)
+            {
+                <option value="@c.Id" selected="@(currentCategoryId == c.Id)">@c.Name</option>
+            }
+        </select>
+    </div>
+    <div class="col-md-3">
+        <button type="submit" class="btn btn-success">Tìm</button>
+        <a asp-action="Index" class="btn btn-outline-secondary">Xóa lọc</a>
+    </div>
+</form>
+
+@if (!Model.Any())
+{
+    <div class="alert alert-warning">Không tìm thấy cuốn sách nào</div>
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div class="row row-cols-1 row-cols-sm-2 row-cols-md-4 g-4">
+    @foreach(var book in Model)
+    {
+        <div class="col">
+            <div class="card h-100 shadow-sm">
+                @if(!string.IsNullOrEmpty(book.ImageUrl))
+                {
+                    <img src="@book.ImageUrl" class="card-img-top" alt="@book.Title" 
+                    style="height: 260px; object-fit: cover;" />
+                }
+                else
+                {
+                    <div class="bg-light d-flex align-items-center justify-content-center text-muted" style="height: 260px">
+                        <i class="bi bi-book fs-1"></i>
+                    </div>
+                }
+                <div class="card-body">
+                    <span class="badge bg-success mb-2">@book.Category?.Name</span>
+                    <h5 class="card-title">@book.Title</h5>
+                    <p class="card-text text-muted mb-1">@book.Author</p>
+                    <p class="fw-bold text-danger mb-0">@book.Price.ToString("N0") đ</p>
+                </div>
+
+                <div class="card-footer bg-white border-0">
+                    @if(book.Stock > 0)
+                    {
+                        <small class="text-success">Còn hàng</small>
+                    }
+                    else
+                    {
+                        <small class="text-secondary">Hết hàng</small>
+                    }
+                </div>
+            </div>
+        </div>
+    }
 </div>

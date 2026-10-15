@@ -1,25 +1,30 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using OnlineBookShopTuto.Data;
 using OnlineBookShopTuto.Models;
-using System.Diagnostics;
 
 namespace OnlineBookShopTuto.Controllers
 {
     public class HomeController : Controller
     {
-        public IActionResult Index()
+        private readonly AppDbContext _context;
+        public HomeController(AppDbContext context)
         {
-            return View();
+            _context = context;
         }
-
-        public IActionResult Privacy()
+        public async Task<IActionResult> Index(string? search, int? categoryId)
         {
-            return View();
-        }
+            var query = _context.Books.Include(b => b.Category).AsQueryable();
+            if(!string.IsNullOrWhiteSpace(search))
+            {
+                query = query.Where(b => b.CategoryId == categoryId.Value);
+            }
+            var books = await query.OrderByDescending(b => b.Id).ToListAsync();
 
-        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-        public IActionResult Error()
-        {
-            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+            ViewBag.Categories = await _context.Categories.OrderBy(c => c.Name).ToListAsync();
+            ViewBag.Search = search;
+            ViewBag.CategoryId = categoryId;
+            return View(books);
         }
     }
 }
