@@ -148,7 +148,7 @@ namespace OnlineBookShopTuto.Controllers
                 await file.CopyToAsync(stream);
             }
 
-            return "/images/books" + fileName;
+            return "/images/books/" + fileName;
         }
     }
 }
